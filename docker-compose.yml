@@ -1,0 +1,50 @@
+version: '3'
+services:
+    reciver:
+        build: ./
+        image: python-container
+        # Don't forget to use this name on mysql --host=container_name
+        container_name: app-reciver
+        volumes:
+          - ./reciver:/app
+        networks:
+            - join
+        stdin_open: true
+        tty: true
+
+
+    appsender:
+        # Don't forget to use this name on mysql --host=container_name
+        build: ./
+        image: flask-app
+        container_name: appsender
+        volumes:
+          - ./sender:/app
+        networks:
+            - join
+        expose:
+          - "5000"
+        ports:
+            - 5000:5000
+
+        command: "/app/run.sh"
+
+    toxiproxy:
+        image: shopify/toxiproxy
+        container_name: toxiproxy
+        restart: always
+
+        expose:
+          - 22222
+
+        ports:
+            - 8474:8474
+        networks:
+            - join
+
+
+
+
+networks:
+    join:
+        driver: "bridge"
